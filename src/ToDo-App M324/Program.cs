@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Text.Json;
 
 class Program
 {
-    static string filePath = "todo_list.csv";
-    static List<string> tasks = new List<string>();
+    const string FILE_PATH = "todo_list.csv";
+    static List<string> tasks = [];
 
     static void Main()
     {
@@ -18,10 +16,11 @@ class Program
             Console.WriteLine("2. Aufgabe entfernen");
             Console.WriteLine("3. Aufgaben anzeigen");
             Console.WriteLine("4. Aufgaben speichern");
-            Console.WriteLine("5. Beenden");
+            Console.WriteLine("5. Aufgaben exportieren (JSON)");
+            Console.WriteLine("6. Beenden");
             Console.Write("Auswahl: ");
 
-            string choice = Console.ReadLine();
+            var choice = Console.ReadLine();
             switch (choice)
             {
                 case "1":
@@ -38,6 +37,9 @@ class Program
                     Console.WriteLine("Aufgaben gespeichert!");
                     break;
                 case "5":
+                    ExportTasks();
+                    break;
+                case "6":
                     SaveTasks();
                     return;
                 default:
@@ -49,21 +51,21 @@ class Program
 
     static void LoadTasks()
     {
-        if (File.Exists(filePath))
+        if (File.Exists(FILE_PATH))
         {
-            tasks = new List<string>(File.ReadAllLines(filePath));
+            tasks = new List<string>(File.ReadAllLines(FILE_PATH));
         }
     }
 
     static void SaveTasks()
     {
-        File.WriteAllLines(filePath, tasks);
+        File.WriteAllLines(FILE_PATH, tasks);
     }
 
     static void AddTask()
     {
         Console.Write("Neue Aufgabe: ");
-        string task = Console.ReadLine();
+        var task = Console.ReadLine();
         if (!string.IsNullOrWhiteSpace(task))
         {
             tasks.Add(task);
@@ -75,7 +77,7 @@ class Program
     {
         ShowTasks();
         Console.Write("Nummer der zu löschenden Aufgabe: ");
-        if (int.TryParse(Console.ReadLine(), out int index) && index > 0 && index <= tasks.Count)
+        if (int.TryParse(Console.ReadLine(), out var index) && index > 0 && index <= tasks.Count)
         {
             tasks.RemoveAt(index - 1);
             Console.WriteLine("Aufgabe entfernt!");
@@ -83,6 +85,28 @@ class Program
         else
         {
             Console.WriteLine("Ungültige Eingabe!");
+        }
+    }
+
+    static void ExportTasks()
+    {
+        Console.Write("Dateiname (JSON): ");
+        var fileName = Console.ReadLine();
+        if (!string.IsNullOrWhiteSpace(fileName))
+        {
+            if (!fileName.EndsWith(".json"))
+            {
+                fileName += ".json";
+            }
+
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true
+            };
+            var json = JsonSerializer.Serialize(tasks, options);
+
+            File.WriteAllText(fileName, json);
+            Console.WriteLine("Aufgaben exportiert!");
         }
     }
 
@@ -95,7 +119,7 @@ class Program
         }
         else
         {
-            for (int i = 0; i < tasks.Count; i++)
+            for (var i = 0; i < tasks.Count; i++)
             {
                 Console.WriteLine($"{i + 1}. {tasks[i]}");
             }
