@@ -1,13 +1,12 @@
-# Version Log
+# M324 - Todo App
 
-## 0.1.0
+In diesem Projekt von Sullivan Renner und Tim Fürer werden die verschiedenen Phasen von DevOps in Verbindung mit dem Modul M324 durchgeführt.
 
-- Notizen speichern
-- Notizen laden
-- Notizen hinzufügen
-- Notizen lesen
-- Notizen löschen
+Das Projekt wird anhand eines einfachen Beispieles in Form einer Todo App durchgrführt. Das Projekt soll gebuildet, getestet und deployt werden.
 
-## 0.1.1
 
-- Notizen exportieren
+## Version Log
+Das Version Log findet sich [hier](./version-log.md).
+
+## Anleitung
+Die Anleitung für das Tool findedt sich [hier](./manual.md)
