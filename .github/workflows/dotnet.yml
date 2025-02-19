@@ -11,6 +11,10 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+        
+    strategy:
+      matrix:
+        configuration: [Debug, Release]
 
     steps:
     - uses: actions/checkout@v4
@@ -22,13 +26,13 @@ jobs:
         
     - name: Restore dependencies
       working-directory: ./src
-      run: dotnet restore
+      run: dotnet restore /p:Configuration={{ matrix.configuration }}
       
     - name: Build
       working-directory: ./src
-      run: dotnet build --no-restore
+      run: dotnet build --no-restore -c {{ matrix.configuration }}
 
       # no test yet
 #    - name: Test
 #      working-directory: ./src
-#      run: dotnet test --no-build --verbosity normal
+#      run: dotnet test --no-build --verbosity normal -c {{ matrix.configuration }}
