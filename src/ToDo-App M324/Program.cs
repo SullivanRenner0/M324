@@ -1,9 +1,10 @@
 ﻿using System.Text.Json;
 
+namespace ToDo_App_M324;
+
 class Program
 {
-    const string FILE_PATH = "todo_list.csv";
-    static List<string> tasks = [];
+    private static readonly TodoManager _manager = new("todo_list.csv");
 
     static void Main()
     {
@@ -34,7 +35,6 @@ class Program
                     break;
                 case "4":
                     SaveTasks();
-                    Console.WriteLine("Aufgaben gespeichert!");
                     break;
                 case "5":
                     ExportTasks();
@@ -42,6 +42,7 @@ class Program
                 case "6":
                     SaveTasks();
                     return;
+
                 default:
                     Console.WriteLine("Ungültige Auswahl!");
                     break;
@@ -51,15 +52,15 @@ class Program
 
     static void LoadTasks()
     {
-        if (File.Exists(FILE_PATH))
-        {
-            tasks = new List<string>(File.ReadAllLines(FILE_PATH));
-        }
+        _manager.LoadTasks();
     }
 
     static void SaveTasks()
     {
-        File.WriteAllLines(FILE_PATH, tasks);
+        if (_manager.SaveTasks())
+            Console.WriteLine("Aufgaben gespeichert!");
+        else
+            Console.WriteLine("Beim speichern der Aufgaben ist ein Fehler aufgetreten!");
     }
 
     static void AddTask()
@@ -68,7 +69,7 @@ class Program
         var task = Console.ReadLine();
         if (!string.IsNullOrWhiteSpace(task))
         {
-            tasks.Add(task);
+            _manager.AddTask(task);
             Console.WriteLine("Aufgabe hinzugefügt!");
         }
     }
@@ -77,9 +78,9 @@ class Program
     {
         ShowTasks();
         Console.Write("Nummer der zu löschenden Aufgabe: ");
-        if (int.TryParse(Console.ReadLine(), out var index) && index > 0 && index <= tasks.Count)
+
+        if (int.TryParse(Console.ReadLine(), out var index) && _manager.RemoveTask(index))
         {
-            tasks.RemoveAt(index - 1);
             Console.WriteLine("Aufgabe entfernt!");
         }
         else
@@ -95,33 +96,25 @@ class Program
         if (!string.IsNullOrWhiteSpace(fileName))
         {
             if (!fileName.EndsWith(".json"))
-            {
                 fileName += ".json";
-            }
 
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = true
-            };
-            var json = JsonSerializer.Serialize(tasks, options);
-
-            File.WriteAllText(fileName, json);
-            Console.WriteLine("Aufgaben exportiert!");
+            if (_manager.ExportTasks(fileName))
+                Console.WriteLine("Aufgaben exportiert!");
+            else
+                Console.WriteLine("Beim exportieren ist ein Fehler aufgetreten!");
         }
     }
 
     static void ShowTasks()
     {
         Console.WriteLine("\nAktuelle Aufgaben:");
-        if (tasks.Count == 0)
-        {
+        if (_manager.Tasks.Length == 0)
             Console.WriteLine("Keine Aufgaben vorhanden.");
-        }
         else
         {
-            for (var i = 0; i < tasks.Count; i++)
+            for (var i = 0; i < _manager.Tasks.Length; i++)
             {
-                Console.WriteLine($"{i + 1}. {tasks[i]}");
+                Console.WriteLine($"{i + 1}. {_manager.Tasks[i]}");
             }
         }
     }
