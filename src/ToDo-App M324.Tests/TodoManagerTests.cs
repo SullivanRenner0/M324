@@ -1,21 +1,22 @@
 ﻿using System.Text.Json;
+using NUnit.Framework;
 
 namespace ToDo_App_M324.Tests;
 
-[TestClass()]
+[TestFixture]
 public class TodoManagerTests
 {
     private string myTempFolder = null!;
 
-    [TestInitialize]
-    public void TestInitialize()
+    [OneTimeSetUp]
+    public void OneTimeSetUp()
     {
         myTempFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         Directory.CreateDirectory(myTempFolder);
     }
 
-    [TestCleanup]
-    public void TestCleanup()
+    [OneTimeTearDown]
+    public void OneTimeTearDown()
     {
         try
         {
@@ -67,80 +68,79 @@ public class TodoManagerTests
     }
 
 
-    [TestMethod()]
-    [DataRow(0)]
-    [DataRow(1)]
-    [DataRow(5)]
-    [DataRow(10)]
-    [DataRow(999)]
-    [DataRow(1000)]
-    [DataRow(1001)]
+    [Test]
+    [TestCase(0)]
+    [TestCase(1)]
+    [TestCase(5)]
+    [TestCase(10)]
+    [TestCase(999)]
+    [TestCase(1000)]
+    [TestCase(1001)]
     public void LoadTasks_Test(int count)
     {
         var sut = CreateSUT(count, false, out var _);
 
         sut.LoadTasks();
 
-        Assert.AreEqual(count, sut.Tasks.Length);
+        Assert.That(sut.Tasks, Has.Length.EqualTo(count));
     }
 
-    [TestMethod()]
-    [DataRow(0, 0)]
-    [DataRow(1, 0)]
-    [DataRow(5, 4)]
+    [Test]
+    [TestCase(0, 0)]
+    [TestCase(1, 0)]
+    [TestCase(5, 4)]
     public void RemoveTask_Test(int before, int expected)
     {
         var sut = CreateSUT(before, true, out var _);
 
         sut.RemoveTask(0);
 
-        Assert.AreEqual(expected, sut.Tasks.Length);
-
+        Assert.That(sut.Tasks, Has.Length.EqualTo(expected));
     }
 
-    [TestMethod()]
-    [DataRow(0, 1)]
-    [DataRow(1, 2)]
-    [DataRow(5, 6)]
+    [Test]
+    [TestCase(0, 1)]
+    [TestCase(1, 2)]
+    [TestCase(5, 6)]
     public void AddTask_Test(int before, int expected)
     {
         var sut = CreateSUT(before, true, out var _);
 
         sut.AddTask(Guid.NewGuid().ToString());
 
-        Assert.AreEqual(expected, sut.Tasks.Length);
+        Assert.That(sut.Tasks, Has.Length.EqualTo(expected));
     }
 
-    [TestMethod()]
-    [DataRow(0)]
-    [DataRow(1)]
-    [DataRow(5)]
-    [DataRow(10)]
-    [DataRow(999)]
-    [DataRow(1000)]
-    [DataRow(1001)]
+    [Test]
+    [TestCase(0)]
+    [TestCase(1)]
+    [TestCase(5)]
+    [TestCase(10)]
+    [TestCase(999)]
+    [TestCase(1000)]
+    [TestCase(1001)]
     public void SaveTasks_Test(int count)
     {
         var sut = CreateSUT(count, true, out var filePath);
 
         File.Delete(filePath);
-        Assert.AreEqual(false, File.Exists(filePath)); // Manager is not allowed to lock file
+        Assert.That(File.Exists(filePath), Is.False); // Manager is not allowed to lock file
 
         var saved = sut.SaveTasks();
         var lines = File.ReadAllLines(filePath);
 
-        Assert.AreEqual(true, saved);
-        Assert.AreEqual(count, lines.Length);
+        Assert.That(saved, Is.True);
+        Assert.That(lines, Has.Length.EqualTo(count));
     }
 
-    [TestMethod()]
-    [DataRow(0)]
-    [DataRow(1)]
-    [DataRow(5)]
-    [DataRow(10)]
-    [DataRow(999)]
-    [DataRow(1000)]
-    [DataRow(1001)]
+    [Test]
+    [TestCase(0)]
+    [TestCase(1)]
+    [TestCase(5)]
+    [TestCase(10)]
+    [TestCase(999)]
+    [TestCase(1000)]
+    [TestCase(1001)]
     public void ExportTasks_Test(int count)
     {
         var sut = CreateSUT(count, true, out var filePath);
@@ -149,10 +149,15 @@ public class TodoManagerTests
         var jsonPath = Path.Combine(dir, "test.json");
 
         var exported = sut.ExportTasks(jsonPath);
-        var json = File.ReadAllText(jsonPath);
-        using var jsonObj = JsonDocument.Parse(json);
 
-        Assert.AreEqual(true, exported);
-        Assert.AreEqual(true, jsonObj != null);
+        TestDelegate jsonValidation = () =>
+        {
+            var reader = new Utf8JsonReader(File.ReadAllBytes(jsonPath));
+            reader.Read();
+            reader.Skip();
+        };
+
+        Assert.That(exported, Is.True);
+        Assert.DoesNotThrow(jsonValidation, "Json is not valid");
     }
 }
