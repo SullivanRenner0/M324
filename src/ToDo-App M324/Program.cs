@@ -79,7 +79,7 @@ class Program
         ShowTasks();
         Console.Write("Nummer der zu löschenden Aufgabe: ");
 
-        if (int.TryParse(Console.ReadLine(), out var index) && _manager.RemoveTask(index))
+        if (int.TryParse(Console.ReadLine(), out var nr) && _manager.RemoveTask(nr - 1))
         {
             Console.WriteLine("Aufgabe entfernt!");
         }
