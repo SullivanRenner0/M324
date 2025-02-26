@@ -32,7 +32,6 @@ jobs:
       working-directory: ./src
       run: dotnet build --no-restore -c ${{ matrix.configuration }}
 
-      # no test yet
-#    - name: Test
-#      working-directory: ./src
-#      run: dotnet test --no-build --verbosity normal -c ${{ matrix.configuration }}
+    - name: Test
+      working-directory: ./src
+      run: dotnet test --no-build --verbosity normal -c ${{ matrix.configuration }}
