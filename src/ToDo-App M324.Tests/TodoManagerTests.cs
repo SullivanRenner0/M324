@@ -1,72 +1,26 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 using NUnit.Framework;
+using ToDo_App_M324.Logic;
 
 namespace ToDo_App_M324.Tests;
 
 [TestFixture]
+[NonParallelizable]
 public class TodoManagerTests
 {
-    private string myTempFolder = null!;
+    private const string file = "todo_list.json"; // must be the same as in TodoManager
+    private JsonSerializerOptions options = null!;
 
     [OneTimeSetUp]
-    public void OneTimeSetUp()
+    public void Setup()
     {
-        myTempFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        Directory.CreateDirectory(myTempFolder);
-    }
-
-    [OneTimeTearDown]
-    public void OneTimeTearDown()
-    {
-        try
+        options = new JsonSerializerOptions
         {
-            Directory.Delete(myTempFolder, true);
-        }
-        catch
-        {
-            foreach (var subDir in Directory.EnumerateDirectories(myTempFolder))
-            {
-                try
-                {
-                    Directory.Delete(subDir, true);
-                }
-                catch
-                {
-
-                }
-            }
-
-            foreach (var file in Directory.EnumerateFiles(myTempFolder))
-            {
-                try
-                {
-                    File.Delete(file);
-                }
-                catch
-                {
-
-                }
-            }
-        }
+            WriteIndented = true
+        };
+        options.Converters.Add(new JsonStringEnumConverter());
     }
-
-
-    private TodoManager CreateSUT(int entriesCount, bool load, out string filepath)
-    {
-        var folder = Path.Combine(myTempFolder, Guid.NewGuid().ToString());
-        Directory.CreateDirectory(folder);
-        filepath = Path.Combine(folder, "items.csv");
-
-        var lines = Enumerable.Range(0, entriesCount).Select(_ => Guid.NewGuid().ToString());
-        File.WriteAllLines(filepath, lines);
-
-        var manager = new TodoManager(filepath);
-        if (load)
-            manager.LoadTasks();
-
-        return manager;
-    }
-
 
     [Test]
     [TestCase(0)]
@@ -76,39 +30,85 @@ public class TodoManagerTests
     [TestCase(999)]
     [TestCase(1000)]
     [TestCase(1001)]
-    public void LoadTasks_Test(int count)
+    public void LoadTodos_Test(int count)
     {
-        var sut = CreateSUT(count, false, out var _);
+        var todos = Enumerable.Range(0, count).Select(i => new Todo
+        {
+            Id = i,
+            Header = Guid.NewGuid().ToString(),
+            Description = Guid.NewGuid().ToString(),
+            Status = TodoStatus.Open,
+            Priority = TodoPriority.Medium,
+            Deadline = DateTime.Now
+        }).ToArray();
+        var json = JsonSerializer.Serialize(todos, options);
+        File.WriteAllText(file, json);
 
-        sut.LoadTasks();
+        var loadedTodos = TodoManager.LoadTodos();
 
-        Assert.That(sut.Tasks, Has.Length.EqualTo(count));
+        Assert.That(loadedTodos, Has.Length.EqualTo(count));
     }
 
     [Test]
     [TestCase(0, 0)]
     [TestCase(1, 0)]
     [TestCase(5, 4)]
-    public void RemoveTask_Test(int before, int expected)
+    public void RemoveTodos_Test(int before, int expected)
     {
-        var sut = CreateSUT(before, true, out var _);
+        var todos = Enumerable.Range(0, before).Select(i => new Todo
+        {
+            Id = i,
+            Header = Guid.NewGuid().ToString(),
+            Description = Guid.NewGuid().ToString(),
+            Status = TodoStatus.Open,
+            Priority = TodoPriority.Medium,
+            Deadline = DateTime.Now
+        }).ToArray();
 
-        sut.RemoveTask(0);
+        var json = JsonSerializer.Serialize(todos, options);
+        File.WriteAllText(file, json);
 
-        Assert.That(sut.Tasks, Has.Length.EqualTo(expected));
+        TodoManager.RemoveTodo(0);
+
+        var loadedTodos = TodoManager.LoadTodos();
+
+        Assert.That(loadedTodos, Has.Length.EqualTo(expected));
     }
 
     [Test]
     [TestCase(0, 1)]
     [TestCase(1, 2)]
     [TestCase(5, 6)]
-    public void AddTask_Test(int before, int expected)
+    public void AddTodos_Test(int before, int expected)
     {
-        var sut = CreateSUT(before, true, out var _);
+        var todos = Enumerable.Range(0, before).Select(i => new Todo
+        {
+            Id = i,
+            Header = Guid.NewGuid().ToString(),
+            Description = Guid.NewGuid().ToString(),
+            Status = TodoStatus.Open,
+            Priority = TodoPriority.Medium,
+            Deadline = DateTime.Now
+        }).ToArray();
 
-        sut.AddTask(Guid.NewGuid().ToString());
+        var json = JsonSerializer.Serialize(todos, options);
+        File.WriteAllText(file, json);
 
-        Assert.That(sut.Tasks, Has.Length.EqualTo(expected));
+        var todo = new Todo
+        {
+            Id = -1,
+            Header = Guid.NewGuid().ToString(),
+            Description = Guid.NewGuid().ToString(),
+            Status = TodoStatus.Open,
+            Priority = TodoPriority.Medium,
+            Deadline = DateTime.Now
+        };
+        TodoManager.AddTodo(todo);
+
+        var loadedTodos = TodoManager.LoadTodos();
+
+        Assert.That(loadedTodos, Has.Length.EqualTo(expected));
+        Assert.That(loadedTodos.Last().Id, Is.Not.EqualTo(-1));
     }
 
     [Test]
@@ -119,36 +119,24 @@ public class TodoManagerTests
     [TestCase(999)]
     [TestCase(1000)]
     [TestCase(1001)]
-    public void SaveTasks_Test(int count)
+    public void ExportTodos_Test(int count)
     {
-        var sut = CreateSUT(count, true, out var filePath);
+        var todos = Enumerable.Range(0, count).Select(i => new Todo
+        {
+            Id = i,
+            Header = Guid.NewGuid().ToString(),
+            Description = Guid.NewGuid().ToString(),
+            Status = TodoStatus.Open,
+            Priority = TodoPriority.Medium,
+            Deadline = DateTime.Now
+        }).ToArray();
 
-        File.Delete(filePath);
-        Assert.That(File.Exists(filePath), Is.False); // Manager is not allowed to lock file
+        var json = JsonSerializer.Serialize(todos, options);
+        File.WriteAllText(file, json);
 
-        var saved = sut.SaveTasks();
-        var lines = File.ReadAllLines(filePath);
+        var jsonPath = "test.json";
 
-        Assert.That(saved, Is.True);
-        Assert.That(lines, Has.Length.EqualTo(count));
-    }
-
-    [Test]
-    [TestCase(0)]
-    [TestCase(1)]
-    [TestCase(5)]
-    [TestCase(10)]
-    [TestCase(999)]
-    [TestCase(1000)]
-    [TestCase(1001)]
-    public void ExportTasks_Test(int count)
-    {
-        var sut = CreateSUT(count, true, out var filePath);
-
-        var dir = new FileInfo(filePath).Directory!.FullName;
-        var jsonPath = Path.Combine(dir, "test.json");
-
-        var exported = sut.ExportTasks(jsonPath);
+        var exported = TodoManager.ExportTodos(jsonPath);
 
         TestDelegate jsonValidation = () =>
         {

@@ -1,47 +1,74 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
-namespace ToDo_App_M324;
+namespace ToDo_App_M324.Logic;
 
-public class TodoManager(string file)
+public static class TodoManager
 {
-    private List<string> _tasks = [];
-    public string[] Tasks => _tasks.ToArray(); // copy
+    private const string file = "todo_list.json";
+    private static readonly JsonSerializerOptions options;
+    static TodoManager()
+    {
+        options = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+        };
+        options.Converters.Add(new JsonStringEnumConverter());
+    }
 
-    public void LoadTasks()
+    public static Todo[] LoadTodos()
     {
         if (File.Exists(file) == false)
         {
-            _tasks = [];
-            return;
+            return [];
         }
 
         try
         {
-            _tasks = File.ReadAllLines(file).ToList();
+            var json = File.ReadAllText(file);
+            return JsonSerializer.Deserialize<Todo[]>(json, options) ?? [];
         }
         catch
         {
-            _tasks = [];
+            return [];
         }
     }
-    public bool RemoveTask(int index)
+    public static Todo GetTodo(long id)
     {
-        if (_tasks.Count > index && index >= 0)
-        {
-            _tasks.RemoveAt(index);
-            return true;
-        }
-        return false;
+        return LoadTodos().Single(t => t.Id == id);
     }
-    public void AddTask(string task)
+
+    public static bool RemoveTodo(long id)
     {
-        _tasks.Add(task);
+        var todos = LoadTodos();
+        var todo = todos.Where(t => t.Id != id).ToArray();
+        return SaveTodos(todo);
     }
-    public bool SaveTasks()
+
+    public static void AddTodo(Todo todo)
+    {
+        var todos = LoadTodos();
+        todo.Id = todos.Length == 0 ? 1 : todos.Max(t => t.Id) + 1;
+        SaveTodos([.. todos, todo]);
+    }
+
+    public static void UpdateTodo(Todo todo)
+    {
+        var todos = LoadTodos();
+        var index = Array.FindIndex(todos, t => t.Id == todo.Id);
+        if (index < 0)
+            return;
+
+        todos[index] = todo;
+        SaveTodos(todos);
+    }
+
+    private static bool SaveTodos(Todo[] todos)
     {
         try
         {
-            File.WriteAllLines(file, _tasks);
+            var json = JsonSerializer.Serialize(todos, options);
+            File.WriteAllText(file, json);
             return true;
         }
         catch
@@ -49,16 +76,13 @@ public class TodoManager(string file)
             return false;
         }
     }
-    public bool ExportTasks(string jsonPath)
+
+    public static bool ExportTodos(string jsonPath)
     {
-        var options = new JsonSerializerOptions
-        {
-            WriteIndented = true
-        };
-        var json = JsonSerializer.Serialize(_tasks, options);
+        var json = JsonSerializer.Serialize(LoadTodos(), options);
 
         var dir = new FileInfo(jsonPath).Directory?.FullName;
-        if (dir != null)
+        if (string.IsNullOrWhiteSpace(dir) == false)
             Directory.CreateDirectory(dir);
 
         try
