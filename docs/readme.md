@@ -4,9 +4,10 @@ In diesem Projekt von Sullivan Renner und Tim Fürer werden die verschiedenen Ph
 
 Das Projekt wird anhand eines einfachen Beispieles in Form einer Todo App durchgrführt. Das Projekt soll gebuildet, getestet und deployt werden.
 
-
 ## Version Log
+
 Das Version Log findet sich [hier](./version-log.md).
 
 ## Anleitung
+
 Die Anleitung für das Tool findedt sich [hier](./manual.md)
