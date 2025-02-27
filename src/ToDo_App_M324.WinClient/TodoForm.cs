@@ -20,7 +20,7 @@ public partial class TodoForm : Form
             ? "Soll das Todo erstellt werden?"
             : "Soll das Todo gespeichert werden?";
 
-        var answer = MessageBox.Show(text, "Todo", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+        var answer = MessageBox.Show(this, text, "Todo", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
         if (answer == DialogResult.Cancel)
         {
             e.Cancel = true;

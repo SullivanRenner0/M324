@@ -37,7 +37,7 @@ public partial class MainForm : Form
             return;
         }
 
-        var answer = MessageBox.Show($"Soll das Todo: '{item.Header}' wirklich gelöscht werden?", "Todo löschen", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+        var answer = MessageBox.Show(this, $"Soll das Todo: '{item.Header}' wirklich gelöscht werden?", "Todo löschen", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
         if (answer != DialogResult.Yes)
         {
             return;
@@ -49,7 +49,7 @@ public partial class MainForm : Form
     private void AddTodo()
     {
         var frm = new TodoForm();
-        frm.ShowDialog();
+        frm.ShowDialog(this);
         LoadTodos();
     }
 
@@ -62,7 +62,7 @@ public partial class MainForm : Form
 
         var frm = new TodoForm();
         frm.LoadTodo(item.Id);
-        frm.ShowDialog();
+        frm.ShowDialog(this);
         LoadTodos();
     }
     private void DuplicateTodo()
@@ -74,7 +74,7 @@ public partial class MainForm : Form
 
         var frm = new TodoForm();
         frm.LoadTodo(item.Id, true);
-        frm.ShowDialog();
+        frm.ShowDialog(this);
         LoadTodos();
     }
 
@@ -85,7 +85,7 @@ public partial class MainForm : Form
             Filter = "Json Datei|*.json",
             Title = "Todos exportieren"
         };
-        if (ofd.ShowDialog() != DialogResult.OK)
+        if (ofd.ShowDialog(this) != DialogResult.OK)
         {
             return;
         }

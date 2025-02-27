@@ -97,7 +97,7 @@ partial class MainForm
         btnExport.UseVisualStyleBackColor = true;
         btnExport.Click += BtnExport_Click;
         // 
-        // Form1
+        // MainForm
         // 
         AutoScaleDimensions = new SizeF(10F, 25F);
         AutoScaleMode = AutoScaleMode.Font;
@@ -107,8 +107,8 @@ partial class MainForm
         Controls.Add(btnDelete);
         Controls.Add(btnAdd);
         Controls.Add(dataGridView1);
-        Name = "Form1";
-        Text = "Form1";
+        Name = "MainForm";
+        Text = "Todo App M324";
         Load += Form1_Load;
         ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
         ResumeLayout(false);

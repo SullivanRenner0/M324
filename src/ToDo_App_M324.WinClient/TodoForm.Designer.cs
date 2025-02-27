@@ -94,6 +94,7 @@ partial class TodoForm
         Controls.Add(txtDescription);
         Controls.Add(txtHeader);
         Name = "TodoForm";
+        StartPosition = FormStartPosition.CenterParent;
         Text = "TodoForm";
         FormClosing += TodoForm_FormClosing;
         ResumeLayout(false);
