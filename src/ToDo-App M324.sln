@@ -3,9 +3,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35208.52
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToDo-App M324", "ToDo-App M324\ToDo-App M324.csproj", "{40621606-322C-40BE-8C5C-3A08AAA70055}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToDo-App M324.Logic", "ToDo-App M324.Logic\ToDo-App M324.Logic.csproj", "{40621606-322C-40BE-8C5C-3A08AAA70055}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToDo-App M324.Tests", "ToDo-App M324.Tests\ToDo-App M324.Tests.csproj", "{BC9C7B0D-037A-4DC6-A775-793113A44231}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToDo_App_M324.WinClient", "ToDo_App_M324.WinClient\ToDo_App_M324.WinClient.csproj", "{FE4EC815-F56A-44B5-8F8D-5F1014210E9D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Projektmappenelemente", "Projektmappenelemente", "{A6425F46-DD31-49F2-B50E-746EABE548C4}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\workflows\dotnet.yml = ..\.github\workflows\dotnet.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +28,10 @@ Global
 		{BC9C7B0D-037A-4DC6-A775-793113A44231}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BC9C7B0D-037A-4DC6-A775-793113A44231}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BC9C7B0D-037A-4DC6-A775-793113A44231}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FE4EC815-F56A-44B5-8F8D-5F1014210E9D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE4EC815-F56A-44B5-8F8D-5F1014210E9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE4EC815-F56A-44B5-8F8D-5F1014210E9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE4EC815-F56A-44B5-8F8D-5F1014210E9D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
