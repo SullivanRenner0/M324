@@ -12,7 +12,8 @@ namespace ToDo_App_M324.Tests;
 [NonParallelizable]
 public class TodoManagerTests
 {
-    private string file = "todo_list.json"; // must be the same as in TodoManager
+    private string file = null!; // must be the same as in TodoManager
+    private string dbDateFormat = null!; // must be the same as in TodoManager
     private JsonSerializerOptions options = null!;
 
     [OneTimeSetUp]
@@ -24,8 +25,11 @@ public class TodoManagerTests
         };
         options.Converters.Add(new JsonStringEnumConverter());
 
-        var prop = typeof(TodoManager).GetField("file", BindingFlags.Static | BindingFlags.NonPublic)!;
-        file = (string)prop.GetValue(null)!;
+        var fileProp = typeof(TodoManager).GetField("file", BindingFlags.Static | BindingFlags.NonPublic)!;
+        file = (string)fileProp.GetValue(null)!;
+
+        var dbDateFormatProp = typeof(TodoManager).GetField("dbDateFormat", BindingFlags.Static | BindingFlags.NonPublic)!;
+        dbDateFormat = (string)dbDateFormatProp.GetValue(null)!;
 
         // Trigger static constructor
         TodoManager.RemoveTodo(-1);
@@ -64,8 +68,8 @@ public class TodoManagerTests
             command.Parameters["@Description"].Value = todo.Description;
             command.Parameters["@Status"].Value = todo.Status.ToString();
             command.Parameters["@Priority"].Value = todo.Priority.ToString();
-            command.Parameters["@Deadline"].Value = todo.Deadline?.ToString("yyyy-MM-dd HH:mm") ?? null;
-            command.Parameters["@Created"].Value = todo.CreatedAt.ToString("yyyy-MM-dd HH:mm");
+            command.Parameters["@Deadline"].Value = todo.Deadline?.ToString(dbDateFormat) ?? null;
+            command.Parameters["@Created"].Value = todo.CreatedAt.ToString(dbDateFormat);
             command.ExecuteNonQuery();
         }
     }
