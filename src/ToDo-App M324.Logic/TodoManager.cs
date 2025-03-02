@@ -1,4 +1,5 @@
 ﻿using System.Data.SQLite;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -10,6 +11,7 @@ namespace ToDo_App_M324.Logic;
 public static class TodoManager
 {
     private const string file = "todo_list.sqlite";
+    private const string dbDateFormat = "yyyy-MM-dd HH:mm:ss";
     private static readonly JsonSerializerOptions options;
 
     static TodoManager()
@@ -77,8 +79,8 @@ public static class TodoManager
             Description = reader.GetString(2),
             Status = Enum.Parse<TodoStatus>(reader.GetString(3)),
             Priority = Enum.Parse<TodoPriority>(reader.GetString(4)),
-            Deadline = reader.IsDBNull(5) ? null : DateTime.Parse(reader.GetString(5)),
-            CreatedAt = DateTime.Parse(reader.GetString(6))
+            Deadline = reader.IsDBNull(5) ? null : DateTime.ParseExact(reader.GetString(5), dbDateFormat, CultureInfo.InvariantCulture),
+            CreatedAt = DateTime.ParseExact(reader.GetString(6), dbDateFormat, CultureInfo.InvariantCulture),
         };
     }
 
@@ -150,8 +152,8 @@ public static class TodoManager
         command.Parameters.AddWithValue("@Description", todo.Description);
         command.Parameters.AddWithValue("@Status", todo.Status.ToString());
         command.Parameters.AddWithValue("@Priority", todo.Priority.ToString());
-        command.Parameters.AddWithValue("@Deadline", todo.Deadline?.ToString("yyyy-MM-dd HH:mm") ?? null);
-        command.Parameters.AddWithValue("@Created", todo.CreatedAt.ToString("yyyy-MM-dd HH:mm"));
+        command.Parameters.AddWithValue("@Deadline", todo.Deadline?.ToString(dbDateFormat) ?? null);
+        command.Parameters.AddWithValue("@Created", todo.CreatedAt.ToString(dbDateFormat));
 
         return ExecuteNonQuery(command) > 0;
     }
@@ -168,7 +170,7 @@ public static class TodoManager
         command.Parameters.AddWithValue("@Description", todo.Description);
         command.Parameters.AddWithValue("@Status", todo.Status.ToString());
         command.Parameters.AddWithValue("@Priority", todo.Priority.ToString());
-        command.Parameters.AddWithValue("@Deadline", todo.Deadline?.ToString("yyyy-MM-dd HH:mm") ?? "");
+        command.Parameters.AddWithValue("@Deadline", todo.Deadline?.ToString(dbDateFormat) ?? "");
         return ExecuteNonQuery(command) > 0;
     }
 
