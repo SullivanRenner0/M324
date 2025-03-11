@@ -36,7 +36,7 @@ public partial class TodoForm : Form
 
     public void LoadTodo(long id, bool saveAsNew = false)
     {
-        var todo = TodoManager.GetTodo(id);
+        var todo = Program.TodoManager.GetTodo(id);
         _id = saveAsNew ? NO_ID : todo.Id;
 
         txtHeader.Text = todo.Header;
@@ -57,7 +57,7 @@ public partial class TodoForm : Form
         if (_id == NO_ID)
             todo = new Todo();
         else
-            todo = TodoManager.GetTodo(_id);
+            todo = Program.TodoManager.GetTodo(_id);
 
         todo.Header = txtHeader.Text;
         todo.Description = txtDescription.Text;
@@ -70,8 +70,8 @@ public partial class TodoForm : Form
 
 
         if (_id == NO_ID)
-            TodoManager.AddTodo(todo);
+            Program.TodoManager.AddTodo(todo);
         else
-            TodoManager.UpdateTodo(todo);
+            Program.TodoManager.UpdateTodo(todo);
     }
 }

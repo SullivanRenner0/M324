@@ -8,16 +8,19 @@ namespace ToDo_App_M324.Logic;
 /// <summary>
 /// Verwaltet eine Liste von To-Do-Aufgaben.
 /// </summary>
-public static class TodoManager
+public class TodoManager
 {
-    private const string file = "todo_list.sqlite";
+    /// <summary>
+    /// Gibt an, dass eine SQL-Abfrage fehlgeschlagen ist.
+    /// </summary>
+    private const int QUERY_FAILED = -1;
+
     private const string dbDateFormat = "yyyy-MM-dd HH:mm:ss";
     private static readonly JsonSerializerOptions options;
+    private readonly string _file;
 
     static TodoManager()
     {
-        CreateDatabase();
-
         options = new JsonSerializerOptions
         {
             WriteIndented = true,
@@ -25,10 +28,16 @@ public static class TodoManager
         options.Converters.Add(new JsonStringEnumConverter());
     }
 
+    public TodoManager(string file)
+    {
+        _file = file;
+        CreateDatabase();
+    }
+
     /// <summary>
     /// Erstellt die SQLite-Datenbank, falls sie nicht existiert.
     /// </summary>
-    private static void CreateDatabase()
+    private void CreateDatabase()
     {
         var command = new SQLiteCommand("CREATE TABLE IF NOT EXISTS Todos (Id INTEGER PRIMARY KEY, Header TEXT NOT NULL, Description TEXT NOT NULL, Status TEXT NOT NULL, Priority TEXT NOT NULL, Deadline TEXT, Created TEXT NOT NULL)");
         ExecuteNonQuery(command);
@@ -39,30 +48,59 @@ public static class TodoManager
     /// Erstellt eine neue SQLite-Verbindung.
     /// </summary>
     /// <returns></returns>
-    private static SQLiteConnection CreateConnection()
+    private SQLiteConnection CreateConnection()
     {
-        var connection = new SQLiteConnection($"Data Source={file}");
+        var connection = new SQLiteConnection($"Data Source={_file}");
         connection.Open();
         return connection;
     }
-
-    /// <summary>
-    /// Gibt an, dass eine SQL-Abfrage fehlgeschlagen ist.
-    /// </summary>
-    private const int QUERY_FAILED = -1;
 
     /// <summary>
     /// Führt eine SQL-Abfrage aus, die die Anzahl betroffenen Zeilen zückgibt.
     /// </summary>
     /// <param name="command"></param>
     /// <returns></returns>
-    private static int ExecuteNonQuery(SQLiteCommand command)
+    private int ExecuteNonQuery(SQLiteCommand command)
     {
         try
         {
             using var connection = CreateConnection();
             command.Connection = connection;
             return command.ExecuteNonQuery();
+        }
+        catch
+        {
+            return QUERY_FAILED;
+        }
+    }
+
+    /// <summary>
+    /// Führt eine SQL-Abfrage aus, und gibt die ID der zuletzt hinzugefügen Zeile zurück.
+    /// </summary>
+    /// <param name="command"></param>
+    /// <returns></returns>
+    private long ExecuteAndGetId(SQLiteCommand command)
+    {
+        try
+        {
+            using var connection = CreateConnection();
+            var transaction = connection.BeginTransaction();
+
+            command.Connection = connection;
+            command.Transaction = transaction;
+
+            var affectedRows = command.ExecuteNonQuery();
+            if (affectedRows == 0)
+                return QUERY_FAILED;
+
+            var idCommand = connection.CreateCommand();
+            idCommand.Transaction = transaction;
+            idCommand.CommandText = "SELECT LAST_INSERT_ROWID();";
+
+            var rowId = (long)idCommand.ExecuteScalar();
+            transaction.Commit();
+
+            return rowId;
         }
         catch
         {
@@ -88,7 +126,7 @@ public static class TodoManager
     /// Lädt alle gespeicherten To-Do-Aufgaben.
     /// </summary>
     /// <returns>Ein Array von To-Do-Aufgaben.</returns>
-    public static Todo[] LoadTodos()
+    public Todo[] LoadTodos()
     {
         try
         {
@@ -116,7 +154,7 @@ public static class TodoManager
     /// <param name="id">Die ID der gesuchten Aufgabe.</param>
     /// <returns>Die gefundene To-Do-Aufgabe.</returns>
     /// <exception cref="Exception"></exception>
-    public static Todo GetTodo(long id)
+    public Todo? GetTodo(long id)
     {
         using var connection = CreateConnection();
         var command = connection.CreateCommand();
@@ -126,7 +164,7 @@ public static class TodoManager
 
         return reader.Read()
             ? LoadTodo(reader)
-            : throw new Exception($"Todo mit ID {id} nicht gefunden");
+            : null;
     }
 
     /// <summary>
@@ -134,7 +172,7 @@ public static class TodoManager
     /// </summary>
     /// <param name="id">Die ID der zu löschenden Aufgabe.</param>
     /// <returns>Gibt <see langword="true"/> zurück, wenn die Aufgabe erfolgreich entfernt wurde.</returns>
-    public static bool RemoveTodo(long id)
+    public bool RemoveTodo(long id)
     {
         var command = new SQLiteCommand("DELETE FROM Todos WHERE Id = @Id");
         command.Parameters.AddWithValue("@Id", id);
@@ -145,7 +183,7 @@ public static class TodoManager
     /// Fügt eine neue To-Do-Aufgabe hinzu.
     /// </summary>
     /// <param name="todo">Die hinzuzufügende To-Do-Aufgabe.</param>
-    public static bool AddTodo(Todo todo)
+    public bool AddTodo(Todo todo)
     {
         var command = new SQLiteCommand("INSERT INTO Todos (Header, Description, Status, Priority, Deadline, Created) VALUES (@Header, @Description, @Status, @Priority, @Deadline, @Created)");
         command.Parameters.AddWithValue("@Header", todo.Header);
@@ -155,14 +193,19 @@ public static class TodoManager
         command.Parameters.AddWithValue("@Deadline", todo.Deadline?.ToString(dbDateFormat) ?? null);
         command.Parameters.AddWithValue("@Created", todo.CreatedAt.ToString(dbDateFormat));
 
-        return ExecuteNonQuery(command) > 0;
+        var rowId = ExecuteAndGetId(command);
+        if (rowId == QUERY_FAILED)
+            return false;
+
+        todo.Id = rowId;
+        return true;
     }
 
     /// <summary>
     /// Aktualisiert eine bestehende To-Do-Aufgabe.
     /// </summary>
     /// <param name="todo">Die zu aktualisierende To-Do-Aufgabe.</param>
-    public static bool UpdateTodo(Todo todo)
+    public bool UpdateTodo(Todo todo)
     {
         var command = new SQLiteCommand("UPDATE Todos SET Header = @Header, Description = @Description, Status = @Status, Priority = @Priority, Deadline = @Deadline WHERE Id = @Id");
         command.Parameters.AddWithValue("@Id", todo.Id);
@@ -179,7 +222,7 @@ public static class TodoManager
     /// </summary>
     /// <param name="jsonPath">Der Speicherpfad der exportierten JSON-Datei.</param>
     /// <returns>Gibt <see langword="true"/> zurück, wenn der Export erfolgreich war.</returns>
-    public static bool ExportTodos(string jsonPath)
+    public bool ExportTodos(string jsonPath)
     {
         var todos = LoadTodos();
         var json = JsonSerializer.Serialize(todos, options);

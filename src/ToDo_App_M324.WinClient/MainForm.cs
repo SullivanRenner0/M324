@@ -22,7 +22,7 @@ public partial class MainForm : Form
 
         dataGridView1.SuspendLayout();
 
-        var todos = TodoManager.LoadTodos();
+        var todos = Program.TodoManager.LoadTodos();
         dataGridView1.DataSource = todos;
 
         dataGridView1.Columns[nameof(Todo.Id)].Visible = false;
@@ -43,7 +43,7 @@ public partial class MainForm : Form
             return;
         }
 
-        TodoManager.RemoveTodo(item.Id);
+        Program.TodoManager.RemoveTodo(item.Id);
         LoadTodos();
     }
     private void AddTodo()
@@ -90,7 +90,7 @@ public partial class MainForm : Form
             return;
         }
 
-        TodoManager.ExportTodos(ofd.FileName);
+        Program.TodoManager.ExportTodos(ofd.FileName);
         Process.Start("explorer.exe", "/select, " + ofd.FileName);
     }
 
