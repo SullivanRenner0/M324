@@ -14,6 +14,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Projektmappenelemente", "Pr
 		docker-compose.yml = docker-compose.yml
 		Dockerfile = Dockerfile
 		..\.github\workflows\dotnet.yml = ..\.github\workflows\dotnet.yml
+		..\.github\workflows\upload_to_azure.yml = ..\.github\workflows\upload_to_azure.yml
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToDo_App_M324.Api", "ToDo_App_M324.Api\ToDo_App_M324.Api.csproj", "{44783BB2-90AF-4058-8B51-A5B3A7472EA6}"

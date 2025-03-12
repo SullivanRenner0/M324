@@ -5,8 +5,8 @@ using ToDo_App_M324.Logic;
 namespace ToDo_App_M324.Api.Controllers;
 
 [ApiController]
-[ApiVersion("0.4")]
-[Route("v0/todo")]
+[ApiVersion("1.0")]
+[Route("api/v1/todos")]
 public class ToDoController(TodoManager manager) : ControllerBase
 {
     [HttpGet(Name = "GetAll")]
@@ -28,8 +28,8 @@ public class ToDoController(TodoManager manager) : ControllerBase
     }
 
 
-    [HttpPost("add", Name = "Add")]
-    public ActionResult<Todo> Add([FromBody] Todo todo)
+    [HttpPost("create", Name = "Create")]
+    public ActionResult<Todo> Create([FromBody] Todo todo)
     {
         var success = manager.AddTodo(todo);
         if (!success)
@@ -37,7 +37,7 @@ public class ToDoController(TodoManager manager) : ControllerBase
             return BadRequest("Failed to add the ToDo item.");
         }
 
-        return CreatedAtRoute("GetById", new { id = todo.Id }, todo);
+        return CreatedAtRoute(nameof(GetById), new { id = todo.Id }, todo);
     }
 
 

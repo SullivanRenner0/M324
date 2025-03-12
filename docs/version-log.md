@@ -6,6 +6,8 @@
   - [0.3.0](#030)
   - [0.4.0](#040)
   - [0.4.1](#041)
+  - [0.5.0](#050)
+  - [1.0.0](#100)
 
 ## 0.1.0
 
@@ -33,3 +35,11 @@
 ## 0.4.1
 
 - Fehler behoben beim Laden der Notizen
+
+## 0.5.0
+
+- API wurde erstellt
+
+## 1.0.0
+
+- API ist öffentlich zugänglich

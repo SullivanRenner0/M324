@@ -1,0 +1,49 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Deploy to Azure Web App
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-image:
+    runs-on: 'ubuntu-latest'
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Log in to registry
+      uses: docker/login-action@v2
+      with:
+        registry: https://todoapp.azurecr.io/
+        username: ${{ secrets.AzureAppService_ContainerUsername_e98d446e4c46492a8b588aadc37b2f20 }}
+        password: ${{ secrets.AzureAppService_ContainerPassword_e91a13825036428988ddacd7c7b20946 }}
+
+    - name: Build and push container image to registry
+      uses: docker/build-push-action@v3
+      with:
+        push: true
+        tags: todoapp.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_e98d446e4c46492a8b588aadc37b2f20 }}/todoapp:${{ github.sha }}
+        context: ./src
+        file: ./src/Dockerfile
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-image
+    environment:
+      name: 'production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+    steps:
+    - name: Deploy to Azure Web App
+      id: deploy-to-webapp
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'Todo-App'
+        slot-name: 'production'
+        publish-profile: ${{ secrets.AzureAppService_PublishProfile_fea735d5c5d7464e90ef25a39dddf6f1 }}
+        images: 'todoapp.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_e98d446e4c46492a8b588aadc37b2f20 }}/todoapp:${{ github.sha }}'

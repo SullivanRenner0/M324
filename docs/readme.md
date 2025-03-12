@@ -10,4 +10,5 @@ Das Version Log findet sich [hier](./version-log.md).
 
 ## Anleitung
 
-Die Anleitung für das Tool findedt sich [hier](./manual.md)
+Die Anleitung für das Windows-Forms Tool findedt sich [hier](./winforms-manual.md)
+Die Anleitung für die API findedt sich [hier](./api-manual.md)

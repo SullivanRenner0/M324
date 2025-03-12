@@ -15,14 +15,15 @@ WORKDIR /src
 COPY ["ToDo_App_M324.Api/ToDo_App_M324.Api.csproj", "ToDo_App_M324.Api/"]
 COPY ["ToDo_App_M324.Logic/ToDo_App_M324.Logic.csproj", "ToDo_App_M324.Logic/"]
 RUN dotnet restore "./ToDo_App_M324.Api/ToDo_App_M324.Api.csproj"
+
 COPY . .
 WORKDIR "/src/ToDo_App_M324.Api"
-RUN dotnet build "./ToDo_App_M324.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "./ToDo_App_M324.Api.csproj" --no-restore -c $BUILD_CONFIGURATION -o /app/build
 
 # Diese Stufe wird verwendet, um das Dienstprojekt zu veröffentlichen, das in die letzte Phase kopiert werden soll.
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./ToDo_App_M324.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./ToDo_App_M324.Api.csproj" --no-restore -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # Diese Stufe wird in der Produktion oder bei Ausführung von VS im regulären Modus verwendet (Standard, wenn die Debugkonfiguration nicht verwendet wird).
 FROM base AS final
