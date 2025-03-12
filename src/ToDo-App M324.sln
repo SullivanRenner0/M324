@@ -3,16 +3,20 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35208.52
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToDo-App M324.Logic", "ToDo-App M324.Logic\ToDo-App M324.Logic.csproj", "{40621606-322C-40BE-8C5C-3A08AAA70055}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToDo_App_M324.Logic", "ToDo_App_M324.Logic\ToDo_App_M324.Logic.csproj", "{40621606-322C-40BE-8C5C-3A08AAA70055}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToDo-App M324.Tests", "ToDo-App M324.Tests\ToDo-App M324.Tests.csproj", "{BC9C7B0D-037A-4DC6-A775-793113A44231}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToDo_App_M324.Tests", "ToDo_App_M324.Tests\ToDo_App_M324.Tests.csproj", "{BC9C7B0D-037A-4DC6-A775-793113A44231}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToDo_App_M324.WinClient", "ToDo_App_M324.WinClient\ToDo_App_M324.WinClient.csproj", "{FE4EC815-F56A-44B5-8F8D-5F1014210E9D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Projektmappenelemente", "Projektmappenelemente", "{A6425F46-DD31-49F2-B50E-746EABE548C4}"
 	ProjectSection(SolutionItems) = preProject
+		docker-compose.yml = docker-compose.yml
+		Dockerfile = Dockerfile
 		..\.github\workflows\dotnet.yml = ..\.github\workflows\dotnet.yml
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToDo_App_M324.Api", "ToDo_App_M324.Api\ToDo_App_M324.Api.csproj", "{44783BB2-90AF-4058-8B51-A5B3A7472EA6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,6 +36,10 @@ Global
 		{FE4EC815-F56A-44B5-8F8D-5F1014210E9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FE4EC815-F56A-44B5-8F8D-5F1014210E9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FE4EC815-F56A-44B5-8F8D-5F1014210E9D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44783BB2-90AF-4058-8B51-A5B3A7472EA6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44783BB2-90AF-4058-8B51-A5B3A7472EA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44783BB2-90AF-4058-8B51-A5B3A7472EA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44783BB2-90AF-4058-8B51-A5B3A7472EA6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

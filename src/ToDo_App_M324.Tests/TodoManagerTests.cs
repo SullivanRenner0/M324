@@ -12,7 +12,6 @@ namespace ToDo_App_M324.Tests;
 [NonParallelizable]
 public class TodoManagerTests
 {
-    private string file = null!; // must be the same as in TodoManager
     private string dbDateFormat = null!; // must be the same as in TodoManager
     private JsonSerializerOptions options = null!;
 
@@ -25,17 +24,11 @@ public class TodoManagerTests
         };
         options.Converters.Add(new JsonStringEnumConverter());
 
-        var fileProp = typeof(TodoManager).GetField("file", BindingFlags.Static | BindingFlags.NonPublic)!;
-        file = (string)fileProp.GetValue(null)!;
-
         var dbDateFormatProp = typeof(TodoManager).GetField("dbDateFormat", BindingFlags.Static | BindingFlags.NonPublic)!;
         dbDateFormat = (string)dbDateFormatProp.GetValue(null)!;
-
-        // Trigger static constructor
-        TodoManager.RemoveTodo(-1);
     }
 
-    private void SetupDatasource(int count)
+    private TodoManager SetupManager(int count)
     {
         var todos = Enumerable.Range(0, count).Select(i => new Todo
         {
@@ -45,6 +38,9 @@ public class TodoManagerTests
             Priority = TodoPriority.Medium,
             Deadline = DateTime.Now
         }).ToArray();
+
+        var file = $"{Guid.NewGuid()}.db";
+        var manager = new TodoManager(file);
 
         using var connection = new SQLiteConnection($"Data Source={file}");
         connection.Open();
@@ -72,6 +68,8 @@ public class TodoManagerTests
             command.Parameters["@Created"].Value = todo.CreatedAt.ToString(dbDateFormat);
             command.ExecuteNonQuery();
         }
+
+        return manager;
     }
 
     [Test]
@@ -84,9 +82,9 @@ public class TodoManagerTests
     [TestCase(101)]
     public void LoadTodos_Test(int count)
     {
-        SetupDatasource(count);
+        var sut = SetupManager(count);
 
-        var loadedTodos = TodoManager.LoadTodos();
+        var loadedTodos = sut.LoadTodos();
 
         Assert.That(loadedTodos, Has.Length.EqualTo(count));
     }
@@ -97,11 +95,11 @@ public class TodoManagerTests
     [TestCase(5, 4)]
     public void RemoveTodos_Test(int before, int expectedCount)
     {
-        SetupDatasource(before);
+        var sut = SetupManager(before);
 
-        var removed = TodoManager.RemoveTodo(1);
+        var removed = sut.RemoveTodo(1);
 
-        var loadedTodos = TodoManager.LoadTodos();
+        var loadedTodos = sut.LoadTodos();
 
         Assert.That(removed, Is.EqualTo(before != expectedCount)); // if before == expectedCount, then removed should be false
         Assert.That(loadedTodos, Has.Length.EqualTo(expectedCount));
@@ -113,7 +111,7 @@ public class TodoManagerTests
     [TestCase(5, 6)]
     public void AddTodos_Test(int before, int expected)
     {
-        SetupDatasource(before);
+        var sut = SetupManager(before);
 
         var todo = new Todo
         {
@@ -124,9 +122,9 @@ public class TodoManagerTests
             Deadline = DateTime.Now
         };
 
-        var added = TodoManager.AddTodo(todo);
+        var added = sut.AddTodo(todo);
 
-        var loadedTodos = TodoManager.LoadTodos();
+        var loadedTodos = sut.LoadTodos();
 
         Assert.That(added, Is.True);
         Assert.That(loadedTodos, Has.Length.EqualTo(expected));
@@ -143,20 +141,35 @@ public class TodoManagerTests
     [TestCase(101)]
     public void ExportTodos_Test(int count)
     {
-        SetupDatasource(count);
+        var sut = SetupManager(count);
 
         var jsonPath = "test.json";
 
-        var exported = TodoManager.ExportTodos(jsonPath);
+        var exported = sut.ExportTodos(jsonPath);
 
-        TestDelegate jsonValidation = () =>
+        void jsonValidation()
         {
             var reader = new Utf8JsonReader(File.ReadAllBytes(jsonPath));
             reader.Read();
             reader.Skip();
-        };
+        }
 
         Assert.That(exported, Is.True);
         Assert.DoesNotThrow(jsonValidation, "Json is not valid");
     }
+
+    [Test]
+    [TestCase(0, 0, true)]
+    [TestCase(1, 1, false)]
+    [TestCase(5, 1, false)]
+    [TestCase(5, 5, false)]
+    [TestCase(5, 6, true)]
+    public void GetTodo_Test(int before, long id, bool isNull)
+    {
+        var sut = SetupManager(before);
+        var todo = sut.GetTodo(id);
+
+        Assert.That(isNull, Is.EqualTo(todo == null));
+    }
+
 }

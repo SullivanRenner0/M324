@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ToDo-App M324.Logic\ToDo-App M324.Logic.csproj" />
+    <ProjectReference Include="..\ToDo_App_M324.Logic\ToDo_App_M324.Logic.csproj" />
   </ItemGroup>
 
 </Project>
